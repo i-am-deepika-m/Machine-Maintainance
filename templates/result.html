@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Failure Prediction Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url("/static/mechanical-engineering-2993233.jpg"); /* Add your background image path here */
+            background-size: auto;
+            background-position: center;
+            height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: rgb(131, 129, 144);
+        }
+        .prediction {
+            margin-top: 30px;
+            padding: 20px;
+            color: #ccc;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #0f0431;
+            box-shadow: 0 0 10px rgba(40, 39, 39, 0.1);
+        }
+        .failure-reason {
+            font-style: italic;
+        }
+        
+    </style>
+</head>
+<body>
+    <h1>Machine Failure Prediction Result</h1>
+    <div class="prediction">
+        <!-- {% if prediction == 1 %} -->
+            <p>The machine is predicted to fail.</p>
+            <p class="failure-reason">Reason for failure: {{ failure_reason }}</p>
+        <!-- {% else %} -->
+            <p>The machine is predicted to be functioning properly.</p>
+        <!-- {% endif %} -->
+    </div>
+</body>
+</html>
+

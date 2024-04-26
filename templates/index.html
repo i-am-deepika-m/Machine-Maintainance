@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Maintenance Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url("/static/mechanical-engineering-2993233.jpg"); /* Add your background image path here */
+            background-size: contain;
+            background-position: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 100px auto 20px; /* Adjust the top margin */
+            padding: 20px;
+            background-color: #b7d2ff;
+            border-radius: 8px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* Lower the shadow slightly */
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .form-group {
+            flex-basis: calc(50% - 20px);
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #071c32;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Machine Maintenance Predictor</h1>
+        <form action="/predict" method="post">
+            <div class="form-group">
+                <label for="air_temperature">Air Temperature:</label>
+                <input type="number" id="air_temperature" name="air_temperature" required>
+            </div>
+            <div class="form-group">
+                <label for="process_temperature">Process Temperature:</label>
+                <input type="number" id="process_temperature" name="process_temperature" required>
+            </div>
+            <div class="form-group">
+                <label for="rotational_speed">Rotational Speed:</label>
+                <input type="number" id="rotational_speed" name="rotational_speed" required>
+            </div>
+            <div class="form-group">
+                <label for="tool_wear">Tool Wear (min):</label>
+                <input type="number" id="tool_wear" name="tool_wear" required>
+            </div>
+            <div class="form-group">
+                <label for="torque">Torque:</label>
+                <input type="number" id="torque" name="torque" required>
+            </div>
+            <div class="form-group">
+                <label for="machine_type">Machine Type:</label>
+                <select id="machine_type" name="machine_type" required>
+                    <option value="1">Low</option>
+                    <option value="2">Medium</option>
+                    <option value="3">High</option>
+                </select>
+            </div>
+            <input type="submit" value="Predict">
+        </form>
+    </div>
+</body>
+</html>
+

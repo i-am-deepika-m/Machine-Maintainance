@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, session, url_for
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
@@ -6,15 +6,59 @@ import joblib
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 
+app.secret_key = 'your_secret_key' 
+users = []
+
 # Load the trained model and preprocessing scaler
 model = joblib.load("model.pkl")
 scaler = joblib.load("scaler.pkl")
 
 feature_order = ['Type', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]','Tool wear [min]']
 
+@app.route("/main")
+def main():
+    return render_template("index.html")
+
 @app.route("/")
 def index():
+    if 'username' not in session:
+        return redirect("/login")  # Redirect to login page if not logged in
     return render_template("index.html")
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Process login form submission (replace this with your login logic)
+        username = request.form['username']
+        password = request.form['password']
+        # Dummy authentication (replace with your actual authentication logic)
+        for user in users:
+            if user['username'] == username and user['password'] == password:
+                # Redirect to a protected page upon successful login
+                return redirect(url_for('main'))
+        # Redirect to signup page if login fails
+        return redirect(url_for('signup'))
+    # Render the login page template for GET requests
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        # Process signup form submission and create new user account
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        # Dummy user creation (replace with your actual user creation logic)
+        new_user = {'username': username, 'email': email, 'password': password}
+        users.append(new_user)
+        # Redirect to login page upon successful signup
+        return redirect("/login")
+    # Render the signup page template for GET requests
+    return render_template('signup.html')
+
+@app.route('/protected')
+def protected():
+    return "This is a protected page. You must be logged in to access it."
 
 @app.route("/predict", methods=["POST"])
 def predict():

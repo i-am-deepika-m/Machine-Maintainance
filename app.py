@@ -3,11 +3,26 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 import joblib
+import sqlite3
+import bcrypt
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
+app.secret_key = 'your_secret_key'
 
-app.secret_key = 'your_secret_key' 
-users = []
+# Function to connect to the database
+def get_db_connection():
+    conn = sqlite3.connect('users.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Function to create the user table
+def create_user_table():
+    conn = get_db_connection()
+    conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, email TEXT, password TEXT)')
+    conn.commit()
+    conn.close()
+
+create_user_table()
 
 # Load the trained model and preprocessing scaler
 model = joblib.load("model.pkl")
@@ -27,33 +42,46 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
-        # Process login form submission (replace this with your login logic)
         username = request.form['username']
         password = request.form['password']
-        # Dummy authentication (replace with your actual authentication logic)
-        for user in users:
-            if user['username'] == username and user['password'] == password:
-                # Redirect to a protected page upon successful login
-                return redirect(url_for('main'))
-        # Redirect to signup page if login fails
-        return redirect(url_for('signup'))
-    # Render the login page template for GET requests
-    return render_template('login.html')
+        
+        # Retrieve user data from the database
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        conn.close()
+
+        if user:
+            # Check if password matches the hashed password in the database
+            if bcrypt.checkpw(password.encode('utf-8'), user['password']):
+                session['username'] = user['username']
+                return redirect('/')
+            else:
+                error = 'Incorrect password'  # Set error message for incorrect password
+        else:
+            error = 'User not found'
+
+    return render_template('login.html', error=error)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        # Process signup form submission and create new user account
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        # Dummy user creation (replace with your actual user creation logic)
-        new_user = {'username': username, 'email': email, 'password': password}
-        users.append(new_user)
-        # Redirect to login page upon successful signup
+
+        # Hash the password
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+        # Insert user data into the database
+        conn = get_db_connection()
+        conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', (username, email, hashed_password))
+        conn.commit()
+        conn.close()
+
         return redirect("/login")
-    # Render the signup page template for GET requests
+
     return render_template('signup.html')
 
 @app.route('/protected')
@@ -96,6 +124,43 @@ def predict():
             failure_reason = "Power Failure"
         
         return render_template("result.html", prediction=prediction, failure_reason=failure_reason)
+    
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'username' not in session:
+        return redirect(url_for('login'))  # Redirect to login page if not logged in
+    
+    error = None
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+        
+        # Retrieve user data from the database
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (session['username'],)).fetchone()
+        
+        # Check if current password matches the one in the database
+        if not bcrypt.checkpw(current_password.encode('utf-8'), user['password']):
+            error = 'Incorrect current password'
+        # Check if new password and confirm password match
+        elif new_password != confirm_password:
+            error = 'New password and confirm password do not match'
+        else:
+            # Hash the new password
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+            # Update the password in the database
+            conn.execute('UPDATE users SET password = ? WHERE username = ?', (hashed_password, session['username']))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('main'))  # Redirect to main page upon successful password change
+    
+    return render_template('change_password.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)  # Remove the 'username' key from the session
+    return redirect(url_for('login'))  # Redirect to the login page after logout
 
 if __name__ == "__main__":
     app.run()

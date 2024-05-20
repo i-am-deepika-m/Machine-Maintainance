@@ -60,43 +60,94 @@
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #0056b3;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: #003d80;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Machine Maintenance Predictor</h1>
-        <form action="/predict" method="post">
-            <div class="form-group">
-                <label for="air_temperature">Air Temperature:</label>
-                <input type="number" id="air_temperature" name="air_temperature" required>
-            </div>
-            <div class="form-group">
-                <label for="process_temperature">Process Temperature:</label>
-                <input type="number" id="process_temperature" name="process_temperature" required>
-            </div>
-            <div class="form-group">
-                <label for="rotational_speed">Rotational Speed:</label>
-                <input type="number" id="rotational_speed" name="rotational_speed" required>
-            </div>
-            <div class="form-group">
-                <label for="tool_wear">Tool Wear (min):</label>
-                <input type="number" id="tool_wear" name="tool_wear" required>
-            </div>
-            <div class="form-group">
-                <label for="torque">Torque:</label>
-                <input type="number" id="torque" name="torque" required>
-            </div>
-            <div class="form-group">
-                <label for="machine_type">Machine Type:</label>
-                <select id="machine_type" name="machine_type" required>
-                    <option value="1">Low</option>
-                    <option value="2">Medium</option>
-                    <option value="3">High</option>
-                </select>
-            </div>
-            <input type="submit" value="Predict">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        <form action="/predict" method="post" onsubmit="return validateForm()">
+        <div class="form-group">
+            <label for="air_temperature">Air Temperature (K):</label>
+            <input type="number" id="air_temperature" name="air_temperature" min="273.15" required>
+        </div>
+        <div class="form-group">
+            <label for="process_temperature">Process Temperature (K):</label>
+            <input type="number" id="process_temperature" name="process_temperature" min="273.15" required>
+        </div>
+        <div class="form-group">
+            <label for="rotational_speed">Rotational Speed (rpm):</label>
+            <input type="number" id="rotational_speed" name="rotational_speed" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="tool_wear">Tool Wear (min):</label>
+            <input type="number" id="tool_wear" name="tool_wear" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="torque">Torque (Nm):</label>
+            <input type="number" id="torque" name="torque" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="machine_type">Machine Type:</label>
+            <select id="machine_type" name="machine_type" required>
+                <option value="1">Low</option>
+                <option value="2">Medium</option>
+                <option value="3">High</option>
+            </select>
+        </div>
+        <input type="submit" value="Predict">
         </form>
     </div>
+    <script>
+        function validateForm() {
+            const airTemperature = document.getElementById('air_temperature').value;
+            const processTemperature = document.getElementById('process_temperature').value;
+            const rotationalSpeed = document.getElementById('rotational_speed').value;
+            const toolWear = document.getElementById('tool_wear').value;
+            const torque = document.getElementById('torque').value;
+
+            if (airTemperature < 273.15) {  // assuming Kelvin scale
+                alert('Air Temperature must be greater than or equal to 273.15 K');
+                return false;
+            }
+            if (processTemperature < 273.15) {  // assuming Kelvin scale
+                alert('Process Temperature must be greater than or equal to 273.15 K');
+                return false;
+            }
+            if (rotationalSpeed < 0) {
+                alert('Rotational Speed must be a positive number');
+                return false;
+            }
+            if (toolWear < 0) {
+                alert('Tool Wear must be a positive number');
+                return false;
+            }
+            if (torque < 0) {
+                alert('Torque must be a positive number');
+                return false;
+            }
+            return true;
+        }
+        function logout() {
+        // Redirect to logout route or perform other logout actions
+        window.location.href = "/logout";
+    }
+    </script>
 </body>
 </html>
 

@@ -4,78 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Machine Maintenance Predictor</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: url("/static/mechanical-engineering-2993233.jpg"); /* Add your background image path here */
-            background-size: contain;
-            background-position: center;
-            height: 100vh;
-        }
-        .container {
-            max-width: 600px;
-            margin: 100px auto 20px; /* Adjust the top margin */
-            padding: 20px;
-            background-color: #b7d2ff;
-            border-radius: 8px;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* Lower the shadow slightly */
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        form {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .form-group {
-            flex-basis: calc(50% - 20px);
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        input[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            background-color: #071c32;
-            border: none;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #0056b3;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .logout-btn:hover {
-            background-color: #003d80;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='indexStyles.css') }}">
 </head>
 <body>
     <div class="container">
@@ -84,23 +13,23 @@
         <form action="/predict" method="post" onsubmit="return validateForm()">
         <div class="form-group">
             <label for="air_temperature">Air Temperature (K):</label>
-            <input type="number" id="air_temperature" name="air_temperature" min="273.15" required>
+            <input type="text" id="air_temperature" name="air_temperature" min="200" max="350" required>
         </div>
         <div class="form-group">
             <label for="process_temperature">Process Temperature (K):</label>
-            <input type="number" id="process_temperature" name="process_temperature" min="273.15" required>
+            <input type="text" id="process_temperature" name="process_temperature" min="200" max="350" required>
         </div>
         <div class="form-group">
             <label for="rotational_speed">Rotational Speed (rpm):</label>
-            <input type="number" id="rotational_speed" name="rotational_speed" min="0" required>
+            <input type="number" id="rotational_speed" name="rotational_speed" min="1000" max = "3000" required>
         </div>
         <div class="form-group">
             <label for="tool_wear">Tool Wear (min):</label>
-            <input type="number" id="tool_wear" name="tool_wear" min="0" required>
+            <input type="number" id="tool_wear" name="tool_wear" min="0" max="400" required>
         </div>
         <div class="form-group">
             <label for="torque">Torque (Nm):</label>
-            <input type="number" id="torque" name="torque" min="0" required>
+            <input type="number" id="torque" name="torque" min="0" max="100" required>
         </div>
         <div class="form-group">
             <label for="machine_type">Machine Type:</label>
@@ -115,30 +44,56 @@
     </div>
     <script>
         function validateForm() {
-            const airTemperature = document.getElementById('air_temperature').value;
-            const processTemperature = document.getElementById('process_temperature').value;
-            const rotationalSpeed = document.getElementById('rotational_speed').value;
-            const toolWear = document.getElementById('tool_wear').value;
-            const torque = document.getElementById('torque').value;
+            const airTemperature = parseFloat(document.getElementById('air_temperature').value);
+            const processTemperature = parseFloat(document.getElementById('process_temperature').value);
+            const rotationalSpeed = parseFloat(document.getElementById('rotational_speed').value);
+            const toolWear = parseFloat(document.getElementById('tool_wear').value);
+            const torque = parseFloat(document.getElementById('torque').value);
 
-            if (airTemperature < 273.15) {  // assuming Kelvin scale
-                alert('Air Temperature must be greater than or equal to 273.15 K');
+            if (isNaN(airTemperature) || isNaN(processTemperature) || isNaN(rotationalSpeed) || isNaN(toolWear) || isNaN(torque)) {
+            alert('Please enter valid numeric values for all fields.');
+            return false;
+            }
+
+            if (airTemperature <= 200) {
+                alert('Air Temperature must be greater than 200 K.');
                 return false;
             }
-            if (processTemperature < 273.15) {  // assuming Kelvin scale
-                alert('Process Temperature must be greater than or equal to 273.15 K');
+            if (airTemperature > 350) {
+                alert('Air Temperature must be lesser than 350 K.');
                 return false;
             }
-            if (rotationalSpeed < 0) {
-                alert('Rotational Speed must be a positive number');
+            if (processTemperature > 350) {
+                alert('Process Temperature must be lesser than 350 K.');
+                return false;
+            }
+
+            if (processTemperature <= 200) {
+                alert('Process Temperature must be greater than 200 K.');
+                return false;
+            }
+            if (rotationalSpeed < 1000) {
+                alert('Rotational Speed must be greater than 1000');
+                return false;
+            }
+            if (rotationalSpeed > 3000) {
+                alert('Rotational Speed must be lesser than 3000');
                 return false;
             }
             if (toolWear < 0) {
                 alert('Tool Wear must be a positive number');
                 return false;
             }
+            if (toolWear > 400) {
+                alert('Tool Wear must be lesser than 400');
+                return false;
+            }
             if (torque < 0) {
                 alert('Torque must be a positive number');
+                return false;
+            }
+            if (torque > 100) {
+                alert('Torque must be lesser than 100');
                 return false;
             }
             return true;

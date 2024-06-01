@@ -1,0 +1,90 @@
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url("/static/mechanical-engineering-2993233.jpg"); /* Add your background image path here */
+            background-size: contain;
+            background-position: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 100px auto 20px; /* Adjust the top margin */
+            padding: 20px;
+            background-color: #b7d2ff;
+            border-radius: 8px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* Lower the shadow slightly */
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .form-group {
+            flex-basis: calc(50% - 20px);
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"]
+        select {
+            width: 100%;
+            padding: 100px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        input[type="text"],
+        input[type="number"]{
+        width: 80%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #071c32;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #0056b3;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: #003d80;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 40px; /* Adjust the height as needed */
+        }
+        
+        /* If you want to specifically target the select element with id "machine_type" */
+        #machine_type {
+            height: 35px;
+            width: 250px; /* Adjust the height as needed */
+        }

@@ -29,11 +29,26 @@
         .failure-reason {
             font-style: italic;
         }
-        
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #0056b3;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: #003d80;
+        }
     </style>
 </head>
 <body>
     <h1>Machine Failure Prediction Result</h1>
+    <button class="logout-btn" onclick="logout()">Logout</button>
     <div class="prediction">
         <!-- {% if prediction == 1 %} -->
             <p>The machine is predicted to fail.</p>
@@ -43,6 +58,12 @@
         <!-- {% endif %} -->
         <a href="{{ url_for('main') }}"><button>Back to Home</button></a>
     </div>
+    <script>
+        function logout() {
+        // Redirect to logout route or perform other logout actions
+        window.location.href = "/logout";
+    }
+    </script>
 </body>
 </html>
 

@@ -1,13 +1,29 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 import joblib
 import sqlite3
 import bcrypt
+import re
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+
+
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 app.secret_key = 'your_secret_key'
+s = URLSafeTimedSerializer(app.secret_key)
+from flask_mail import Mail, Message
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'deepikam2121@gmail.com'
+app.config['MAIL_PASSWORD'] = 'deepika2002@'
+app.config['MAIL_DEFAULT_SENDER'] = 'deepikam2121@gmail.com'
+
+mail = Mail(app)
 
 # Function to connect to the database
 def get_db_connection():
@@ -127,40 +143,105 @@ def predict():
     
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
-    if 'username' not in session:
-        return redirect(url_for('login'))  # Redirect to login page if not logged in
-    
-    error = None
     if request.method == 'POST':
+        username_email = request.form['username_email']
         current_password = request.form['current_password']
         new_password = request.form['new_password']
         confirm_password = request.form['confirm_password']
-        
-        # Retrieve user data from the database
+
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE username = ?', (session['username'],)).fetchone()
+        user = conn.execute('SELECT * FROM users WHERE username = ? OR email = ?', (username_email, username_email)).fetchone()
+
         
-        # Check if current password matches the one in the database
+
+        if not user:
+            flash('User not found.', 'error')
+            return redirect(url_for('change_password'))
+
         if not bcrypt.checkpw(current_password.encode('utf-8'), user['password']):
-            error = 'Incorrect current password'
-        # Check if new password and confirm password match
-        elif new_password != confirm_password:
-            error = 'New password and confirm password do not match'
-        else:
-            # Hash the new password
-            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-            # Update the password in the database
-            conn.execute('UPDATE users SET password = ? WHERE username = ?', (hashed_password, session['username']))
-            conn.commit()
-            conn.close()
-            return redirect(url_for('main'))  # Redirect to main page upon successful password change
-    
-    return render_template('change_password.html', error=error)
+            flash('Incorrect current password.', 'error')
+            return redirect(url_for('change_password'))
+
+        if new_password != confirm_password:
+            flash('New password and confirm password do not match.', 'error')
+            return redirect(url_for('change_password'))
+
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        conn.execute('UPDATE users SET password = ? WHERE id = ?', (hashed_password, user['id']))
+        conn.commit()
+        conn.close()
+
+        flash('Your password has been updated.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('change_password.html')
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)  # Remove the 'username' key from the session
     return redirect(url_for('login'))  # Redirect to the login page after logout
+
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if request.method == 'POST':
+        email = request.form['email']
+        
+        # Retrieve user data from the database
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+        conn.close()
+
+        if user:
+            # Generate a password reset token
+            token = s.dumps(email, salt='password-reset-salt')
+
+            # Generate a password reset URL
+            reset_url = url_for('reset_password', token=token, _external=True)
+
+            # Send the email
+            msg = Message('Password Reset Request', sender='your_email@gmail.com', recipients=[email])
+            msg.body = f'Please use the following link to reset your password: {reset_url}'
+            mail.send(msg)
+            
+            flash('A password reset link has been sent to your email.', 'info')
+        else:
+            flash('Email address not found.', 'danger')
+        
+        return redirect(url_for('login'))
+
+    return render_template('reset_password_request.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = s.loads(token, salt='password-reset-salt', max_age=3600)  # Token valid for 1 hour
+    except (SignatureExpired, BadSignature):
+        flash('The password reset link is invalid or has expired.', 'danger')
+        return redirect(url_for('reset_password_request'))
+
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        if new_password != confirm_password:
+            flash('New password and confirm password do not match.', 'danger')
+        else:
+            # Hash the new password
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+            
+            # Update the password in the database
+            conn = get_db_connection()
+            conn.execute('UPDATE users SET password = ? WHERE email = ?', (hashed_password, email))
+            conn.commit()
+            conn.close()
+
+            flash('Your password has been updated.', 'success')
+            return redirect(url_for('login'))
+
+    return render_template('reset_password.html')
+
+
 
 if __name__ == "__main__":
     app.run()
